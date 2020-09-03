@@ -518,21 +518,44 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
 
 Source: [Cockpit UI](https://cockpit-project.org/)
 
-1. Install Cockpit.
+**Important note:** The steps in this section will install the Cockpit **Preview** version.  If you prefer to install the current stable version, skip to step 3.
+
+1. Create the Cockpit Preview repo file.
 
    ```
+   sudo touch /etc/yum.repos.d/cockpit-preview.repo
+   ```
+   
+
+2. Add the following contents to `/etc/yum.repos.d/cockpit-preview.repo`:
+
+   ``` 
+   [copr:copr.fedorainfracloud.org:group_cockpit:cockpit-preview]
+   name=Copr repo for cockpit-preview owned by @cockpit
+   baseurl=https://download.copr.fedorainfracloud.org/results/@cockpit/cockpit-preview/epel-8-$basearch/
+   type=rpm-md
+   skip_if_unavailable=True
+   gpgcheck=1
+   gpgkey=https://download.copr.fedorainfracloud.org/results/@cockpit/cockpit-preview/pubkey.gpg
+   repo_gpgcheck=0
+   enabled=1
+   enabled_metadata=1
+   ```
+
+3. Update `yum` cache and install Cockpit Preview
+
+   ```
+   sudo yum -y update
    sudo dnf install -y cockpit
-   sudo dnf install -y cockpit-machines
-   sudo dnf install -y cockpit-pcp
    ```
 
-2. Enable and start the Cockpit service.
+4. Enable and start the Cockpit service.
 
    ```
    sudo systemctl enable cockpit.socket --now
    ```
 
-3. Allow access to Cockpit through the firewall.
+3. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    ```
    sudo firewall-cmd --add-service=cockpit --permanent
@@ -548,7 +571,13 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-5. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+5. If using KVM, install the Cockpit KVM plugin.
+
+   ```
+   sudo dnf install -y cockpit-machines
+   ```
+
+6. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
 ### Webmin
 
