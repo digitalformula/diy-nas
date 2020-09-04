@@ -602,7 +602,13 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo dnf install -y cockpit-machines
    ```
 
-6. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+6. For historical performance metrics via PCP, install the Cockpit PCP plugin.
+
+   ```
+   sudo yum install -y cockpit-pcp
+   ```
+
+7. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -610,7 +616,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-6. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+8. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
 ### Webmin
 
