@@ -123,7 +123,7 @@ The next sections can be used or not used as you see fit.  For example, you may 
 
      ```
      sudo yum -y install epel-release
-     sudo dnf install hddtemp
+     sudo dnf install -y hddtemp
      sudo yum -y install lm_sensors
      ```
 
@@ -576,6 +576,14 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    ```
    sudo dnf install -y cockpit-machines
    ```
+
+6. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+
+   ```
+   sudo remotectl certificate
+   ```
+
+   By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
 6. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
