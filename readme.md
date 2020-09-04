@@ -580,14 +580,14 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo systemctl enable cockpit.socket --now
    ```
 
-3. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
+5. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    ```
    sudo firewall-cmd --add-service=cockpit --permanent
    sudo firewall-cmd --reload
    ```
 
-4. If using ZFS, install the Cockpit ZFS plugin.
+6. If using ZFS, install the Cockpit ZFS plugin.
 
    ```
    sudo yum -y install git
@@ -596,19 +596,19 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-5. If using KVM, install the Cockpit KVM plugin.
+7. If using KVM, install the Cockpit KVM plugin.
 
    ```
    sudo dnf install -y cockpit-machines
    ```
 
-6. For historical performance metrics via PCP, install the Cockpit PCP plugin.
+8. For historical performance metrics via PCP, install the Cockpit PCP plugin.
 
    ```
    sudo yum install -y cockpit-pcp
    ```
 
-7. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+9. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -616,7 +616,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-8. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+10. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
 ### Webmin
 
