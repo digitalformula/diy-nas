@@ -514,6 +514,8 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
 
 ### PCP - Performance Co-Pilot
 
+Performance Co-Pilot, when installed alongside Cockpit UI in this configuration (see next section), will allow analysis of historical performance metrics.  Without this, Cockpit UI will show a snapshot of the current performance only, with no historical data.
+
 1. Install PCP.
 
    ```
