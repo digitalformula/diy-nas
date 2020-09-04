@@ -512,6 +512,29 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
 
 5. Test Portainer by browsing to to `http://<centos_ip_address_or_hostname>:9000`
 
+### PCP - Performance Co-Pilot
+
+1. Install PCP.
+
+   ```
+   sudo yum install -y pcp
+   ```
+
+2. Start PCP.
+
+   ```
+   sudo systemctl start pmcd
+   sudo systemctl enable pmcd
+   ```
+
+3. Check PCP operation.
+
+   ```
+   pcp
+   ```
+
+   ![PCP first run](docs/images/run_pcp.png)
+
 ### Cockpit UI
 
 *Cockpit UI could be optional if you prefer to use Webmin in the next section.*
