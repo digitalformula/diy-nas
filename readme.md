@@ -541,6 +541,8 @@ Performance Co-Pilot, when installed alongside Cockpit UI in this configuration 
 
 *Cockpit UI could be optional if you prefer to use Webmin in the next section.*
 
+*Please also note that a server install of CentOS 8 will probably have Cockpit UI already installed.  It needs to be enabled to work, so if this is the case for your system, please skip to step 4.*
+
 Source: [Cockpit UI](https://cockpit-project.org/)
 
 **Important note:** The steps in this section will install the Cockpit **Preview** version.  If you prefer to install the current stable version, skip to step 3.
@@ -567,11 +569,11 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    enabled_metadata=1
    ```
 
-3. Update `yum` cache and install Cockpit Preview
+3. Update `yum` cache and install Cockpit Preview.  We'll also install `cockpit-storaged` at the same time, since I can't imagine a situation/build where storage info and management isn't useful.
 
    ```
    sudo yum -y update
-   sudo dnf install -y cockpit
+   sudo dnf install -y cockpit cockpit-storaged
    ```
 
 4. Enable and start the Cockpit service.
