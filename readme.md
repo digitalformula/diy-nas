@@ -49,13 +49,13 @@ The first section is making sure your machine is ready to proceed.
 1. First, make sure your CentOS system is up-to-date and has all latest packages.
 
    ```
-   sudo yum -y update
+   sudo dnf -y update
    ```
 
 2. Install OpenSSH-Server if it has not already been installed.
 
    ```
-   sudo yum -y install openssh-server
+   sudo dnf -y install openssh-server
    sudo systemctl enable sshd --now
    ```
 
@@ -101,20 +101,20 @@ For remote command-line administration via SSH, it can be useful to add your SSH
 
 The next sections can be used or not used as you see fit.  For example, you may not choose to use ZFS as your NAS filesystem.  If that's the case, just skip that section.
 
-*In all steps that make use of `yum`, I have used the `-y` switch.  This prevents `yum` for asking for confirmation before installing packages.  You may wish to run `yum` without the `-y` switch if you'd like to see what it's doing at each step.*
+*In all steps that make use of `dnf`, I have used the `-y` switch.  This prevents `dnf` for asking for confirmation before installing packages.  You may wish to run `dnf` without the `-y` switch if you'd like to see what it's doing at each step.*
 
 ### CentOS 8.2
 
 1. Update CentOS 8 packages.
 
    ```
-   sudo yum -y update
+   sudo dnf -y update
    ```
 
 2. Install useful packages.
 
    ```
-   sudo yum -y install git curl rsync yum-utils bind-utils net-tools
+   sudo dnf -y install git curl rsync yum-utils bind-utils net-tools
    ```
 
 3. Install temperature monitors.
@@ -122,9 +122,9 @@ The next sections can be used or not used as you see fit.  For example, you may 
    - Install packages.
 
      ```
-     sudo yum -y install epel-release
+     sudo dnf -y install epel-release
      sudo dnf install -y hddtemp
-     sudo yum -y install lm_sensors
+     sudo dnf -y install lm_sensors
      ```
 
    - Detect sensors for the first time.
@@ -270,7 +270,7 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 1. Add the ZFS repository.
 
    ```
-   sudo yum -y install http://download.zfsonlinux.org/epel/zfs-release.el8_2.noarch.rpm
+   sudo dnf -y install http://download.zfsonlinux.org/epel/zfs-release.el8_2.noarch.rpm
    ```
 
 2. Modify the repository file to enable the kABI-tracking kmods.  Please see the [OpenZFS website](https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html) for information on why you may or may not want to do this.
@@ -282,7 +282,7 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 3. Install OpenZFS.
 
    ```
-   sudo yum -y install zfs
+   sudo dnf -y install zfs
    ```
 
 4. Ensure the ZFS module can be loaded.
@@ -519,7 +519,7 @@ Performance Co-Pilot, when installed alongside Cockpit UI in this configuration 
 1. Install PCP.
 
    ```
-   sudo yum install -y pcp
+   sudo dnf install -y pcp
    ```
 
 2. Start PCP.
@@ -569,10 +569,10 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    enabled_metadata=1
    ```
 
-3. Update `yum` cache and install Cockpit Preview.  We'll also install `cockpit-storaged` at the same time, since I can't imagine a situation/build where storage info and management isn't useful.
+3. Update `dnf` cache and install Cockpit Preview.  We'll also install `cockpit-storaged` at the same time, since I can't imagine a situation/build where storage info and management isn't useful.
 
    ```
-   sudo yum -y update
+   sudo dnf -y update
    sudo dnf install -y cockpit cockpit-storaged
    ```
 
@@ -592,7 +592,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 6. If using ZFS, install the Cockpit ZFS plugin.
 
    ```
-   sudo yum -y install git
+   sudo dnf -y install git
    cd ~
    git clone https://github.com/optimans/cockpit-zfs-manager.git
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
@@ -607,7 +607,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 8. For historical performance metrics via PCP, install the Cockpit PCP plugin.
 
    ```
-   sudo yum install -y cockpit-pcp
+   sudo dnf install -y cockpit-pcp
    ```
 
 9. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
@@ -646,7 +646,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    - Install Webmin.
 
      ```
-     sudo yum -y install webmin
+     sudo dnf -y install webmin
      ```
 
    - Allow access to Webmin through the firewall.
