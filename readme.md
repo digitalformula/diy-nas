@@ -512,6 +512,20 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
 
 5. Test Portainer by browsing to to `http://<centos_ip_address_or_hostname>:9000`
 
+### Container Monitoring
+
+This step is completely optional and should be thought about carefully before implementing.  The "Docker Monitoring Logging Alert" suite described here will deploy 13 differente containers for different tasks - make sure your NAS or server has sufficient resources to do this.
+
+1. By default, port 9090 is used by the Prometheus database.  In a later section of this document is Cockpit UI - this also runs on port 9090 by default.  I would strongly recommend changing the Cockpit UI port using the steps in that section, rather than changing the Prometheus port by modifying the included Docker Compose files.
+
+2. Deploy the suite by following the [instructions](https://github.com/uschtwill/docker_monitoring_logging_alerting) in the repo.
+
+   *Note: The prereuisites for this suite indicate a requirement for `apache2-utils`.  This is because the suite requires the `htpasswd` command.  On CentOS 8, the `htpasswd` command is part of the `httpd-tools` package.  Install this as follows.
+
+   ```
+   sudo dnf install -y httpd-tools
+   ```
+
 ### PCP - Performance Co-Pilot
 
 Performance Co-Pilot, when installed alongside Cockpit UI in this configuration (see next section), will allow analysis of historical performance metrics.  Without this, Cockpit UI will show a snapshot of the current performance only, with no historical data.
