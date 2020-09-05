@@ -576,20 +576,32 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo dnf install -y cockpit cockpit-storaged
    ```
 
-4. Enable and start the Cockpit service.
+4. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
+
+   The directions are located [here](https://cockpit-project.org/guide/latest/listen.html).
+
+   If you do this, restarting `cockpit.socket` will need to be done like this:
+
+   ```
+   sudo setenforce 0
+   sudo systemctl restart cockpit.socket
+   sudo setenforce 1
+   ```
+
+5. Enable and start the Cockpit service.
 
    ```
    sudo systemctl enable cockpit.socket --now
    ```
 
-5. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
+6. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    ```
    sudo firewall-cmd --add-service=cockpit --permanent
    sudo firewall-cmd --reload
    ```
 
-6. If using ZFS, install the Cockpit ZFS plugin.
+7. If using ZFS, install the Cockpit ZFS plugin.
 
    ```
    sudo dnf -y install git
@@ -598,19 +610,19 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-7. If using KVM, install the Cockpit KVM plugin.
+8. If using KVM, install the Cockpit KVM plugin.
 
    ```
    sudo dnf install -y cockpit-machines
    ```
 
-8. For historical performance metrics via PCP, install the Cockpit PCP plugin.
+9. For historical performance metrics via PCP, install the Cockpit PCP plugin.
 
    ```
    sudo dnf install -y cockpit-pcp
    ```
 
-9. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+10. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -618,7 +630,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-10. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+11. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
 ### Webmin
 
