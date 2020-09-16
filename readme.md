@@ -503,7 +503,7 @@ For my configuration, I'm using Docker Swarm to control the use of multiple cont
 
 Source: [Installing Portainer](https://www.portainer.io/installation/)
 
-*Note: The official documentation uses `docker run` to start Portainer,  but I prefer to use `docker-compose`.
+*Note: The official documentation uses `docker run` to start Portainer,  but in this example I'm using `docker-compose`.  Docker Swarm was mentioned above as that's what I use in production, but this example may be easier than going down the Docker Swarm road.
 
 1. Create a file named `~/docker/docker-compose.yml`
 
