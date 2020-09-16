@@ -459,6 +459,46 @@ Source: [Install Docker Compose](https://docs.docker.com/compose/install/) and [
    STORAGE_ROOT=/tank
    ```
 
+### Docker Swarm
+
+For my configuration, I'm using Docker Swarm to control the use of multiple containers for the services that need them.  The initial configuration only has the NAS itself as a swarm worker and manager, but additional workers can be added at any time.
+
+1. Create a Docker Swarm.
+
+   ```
+   sudo docker swarm init --advertise-addr=<centos_nas_ip_address>
+   ```
+   
+   ![Docker Swarm Init](docs/images/docker_swarm_init.png)
+
+2. In some situations (I don't know why) it seems the upcoming initialisation commands can fail due to the absence of an ingress network.  To ensure your system has at least one ingress network, list the existing networks and look for a network named "INGRESS" with a driver type of "OVERLAY".
+
+   ```
+   sudo docker network ls
+   ```
+
+   ![Docker Ingress Network](docs/images/docker_swarm_ingress.png)
+
+   If there is no ingress network defined e.g. if all networks were deleted for some reason, an ingress network can be recreated with the following command.
+
+   ```
+   sudo docker network create --ingress --driver overlay ingress
+   ```
+
+3. From here it's a case of creating your `docker-compose.yml` file, since Docker Stack supports that format. After you have created that file (it can be named anything you like), deploy the Docker Stack as follows.
+
+   ```
+   sudo docker stack deploy --compose-file docker-compose.yml [application_name]
+   ```
+
+4. In my application, named `diy-nas`, I have a service named `bind` that runs DNS services.  There are 3 replicas of the `bind` container and I can quickly stop or start the `named` service on each of them by running this command.
+
+   ```
+   for i in $(docker ps -a | grep bind | awk '{print $1;}'); do docker exec -ti $i /etc/init.d/named start; done
+   ```
+
+   ![Start bind services on all bind containers](docs/images/docker_stack_start_bind.png)
+
 ### Portainer
 
 Source: [Installing Portainer](https://www.portainer.io/installation/)
@@ -619,6 +659,15 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
 10. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+
+11. Optionally, change the Cockpit UI from `9090` to a port that suits your network.  The steps for this can be found in the [Cockpit Documentation].  On CentOS 8, you may need to run `sudo setenforce 0` before restarting the `cockpit.socket` service, then `sudo setenforce 1` afterwards.  Without doing this, SELinux may stop Cockpit from restarting and listening on the new port.
+
+    The following commands can be used to make the SELinux Local Policy change permanent:
+
+    ```
+    sudo ausearch -c 'systemd' --raw | audit2allow -M my-systemd
+    sudo semodule -X 300 -i my-systemd.pp
+    ```
 
 ### Webmin
 
