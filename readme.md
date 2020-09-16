@@ -552,6 +552,22 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
 
 5. Test Portainer by browsing to to `http://<centos_ip_address_or_hostname>:9000`
 
+### Container Monitoring with Grafana
+
+This step is completely optional and should be thought about carefully before implementing.  The "Docker Monitoring Logging Alert" suite described here will deploy 13 different containers for different tasks - make sure your NAS or server has sufficient resources to do this.
+
+1. By default, port 9090 is used by the Prometheus database.  In a later section of this document is Cockpit UI - this also runs on port 9090 by default.  I would strongly recommend changing the Cockpit UI port using the steps in that section, rather than changing the Prometheus port by modifying the included Docker Compose files.
+
+2. Deploy the suite by following the [instructions](https://github.com/uschtwill/docker_monitoring_logging_alerting) in the repo.
+
+   *Note: The prereuisites for this suite indicate a requirement for `apache2-utils`.  This is because the suite requires the `htpasswd` command.  On CentOS 8, the `htpasswd` command is part of the `httpd-tools` package.  Install this as follows.
+
+   ```
+   sudo dnf install -y httpd-tools
+   ```
+
+   ![Container Monitoring with Grafana](docs/images/container_monitoring.png)
+
 ### PCP - Performance Co-Pilot
 
 Performance Co-Pilot, when installed alongside Cockpit UI in this configuration (see next section), will allow analysis of historical performance metrics.  Without this, Cockpit UI will show a snapshot of the current performance only, with no historical data.
@@ -616,20 +632,32 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo dnf install -y cockpit cockpit-storaged
    ```
 
-4. Enable and start the Cockpit service.
+4. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
+
+   The directions are located [here](https://cockpit-project.org/guide/latest/listen.html).
+
+   If you do this, restarting `cockpit.socket` will need to be done like this:
+
+   ```
+   sudo setenforce 0
+   sudo systemctl restart cockpit.socket
+   sudo setenforce 1
+   ```
+
+5. Enable and start the Cockpit service.
 
    ```
    sudo systemctl enable cockpit.socket --now
    ```
 
-5. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
+6. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    ```
    sudo firewall-cmd --add-service=cockpit --permanent
    sudo firewall-cmd --reload
    ```
 
-6. If using ZFS, install the Cockpit ZFS plugin.
+7. If using ZFS, install the Cockpit ZFS plugin.
 
    ```
    sudo dnf -y install git
@@ -638,19 +666,19 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-7. If using KVM, install the Cockpit KVM plugin.
+8. If using KVM, install the Cockpit KVM plugin.
 
    ```
    sudo dnf install -y cockpit-machines
    ```
 
-8. For historical performance metrics via PCP, install the Cockpit PCP plugin.
+9. For historical performance metrics via PCP, install the Cockpit PCP plugin.
 
    ```
    sudo dnf install -y cockpit-pcp
    ```
 
-9. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+10. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -658,7 +686,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-10. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+11. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
 
 11. Optionally, change the Cockpit UI from `9090` to a port that suits your network.  The steps for this can be found in the [Cockpit Documentation].  On CentOS 8, you may need to run `sudo setenforce 0` before restarting the `cockpit.socket` service, then `sudo setenforce 1` afterwards.  Without doing this, SELinux may stop Cockpit from restarting and listening on the new port.
 
