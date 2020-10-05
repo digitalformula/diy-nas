@@ -581,8 +581,8 @@ Performance Co-Pilot, when installed alongside Cockpit UI in this configuration 
 2. Start PCP.
 
    ```
-   sudo systemctl start pmcd
-   sudo systemctl enable pmcd
+   sudo systemctl enable pmcd --now
+   sudo systemctl enable pmproxy --now
    ```
 
 3. Check PCP operation.
