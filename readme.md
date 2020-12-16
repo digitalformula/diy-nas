@@ -727,6 +727,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-machines_233-1~ubuntu20.04.1_all.deb
    wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-packagekit_233-1~ubuntu20.04.1_all.deb
    # wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-tests_233-1~ubuntu20.04.1_amd64.deb
+   ```
 
 2. Install Cockpit.
 
