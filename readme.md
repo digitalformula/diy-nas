@@ -406,12 +406,13 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 1. Install NFS packages.
 
    ```
-   sudo apt-get -y install nfs-common
+   sudo apt-get -y install nfs-common nfs-kernel-server
    ```
 
-2. Allow access to NFS through the firewall.
+2. Start NFS and allow access through the firewall.
 
    ```
+   sudo systemctl enable nfs-kernel-server --now
    sudo firewall-cmd --add-service=nfs --permanent
    sudo firewall-cmd --reload
    ```
@@ -709,7 +710,13 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
 **Important note:** The steps in this section will install Cockpit from Ubuntu **Backports**.  There are risks associated with this that you should be familiar with, before continuing.
 
-1. Download the appropriate installation files.  These steps are for Cockpit version 233.  I'm based in Australia so I'm using the Ubuntu AU mirror.
+1. Install prerequisites.
+
+   ```
+   sudo apt-get install -y libpwquality-tools udisks2 network-manager libvirt-dbus pcp libpcp3
+   ```
+
+2. Download the appropriate installation files.  These steps are for Cockpit version 233.  I'm based in Australia so I'm using the Ubuntu AU mirror.
 
    ```
    cd ~
@@ -729,7 +736,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    # wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-tests_233-1~ubuntu20.04.1_amd64.deb
    ```
 
-2. Install Cockpit.
+3. Install Cockpit.
 
    ```
    cd ~/cockpit
@@ -737,24 +744,23 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo dpkg -i cockpit-ws_233-1~ubuntu20.04.1_amd64.deb
    sudo dpkg -i cockpit-dashboard_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-system_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-storaged_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-networkmanager_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-doc_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-machines_233-1~ubuntu20.04.1_all.deb
    sudo dpkg -i cockpit-packagekit_233-1~ubuntu20.04.1_all.deb
+   sudo dpkg -i cockpit_233-1~ubuntu20.04.1_all.deb
    # sudo dpkg -i cockpit-tests_233-1~ubuntu20.04.1_amd64.deb
    ```
  
-2. Install PCP and Cockpit Machines.
+4. Install PCP and Cockpit Machines.
 
    ```
-   sudo apt-get -y install libpcp3 libvirt-dbus
    sudo dpkg -i install cockpit-pcp_233-1~ubuntu20.04.1_amd64.deb
    sudo dpkg -i install cockpit-machines_233-1~ubuntu20.04.1_all.deb
    ```
 
-3. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
+5. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
 
    The directions are located [here](https://cockpit-project.org/guide/latest/listen.html).
 
@@ -766,13 +772,13 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo setenforce 1
    ```
 
-4. Enable and start the Cockpit service.
+6. Enable and start the Cockpit service.
 
    ```
    sudo systemctl enable cockpit.socket --now
    ```
 
-5. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
+7. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    - If you **HAVE NOT** changed the Cockpit port from 9090 to something else:
 
@@ -788,7 +794,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
      sudo firewall-cmd --reload
      ```
 
-6. If using ZFS, install the Cockpit ZFS plugin.
+8. If using ZFS, install the Cockpit ZFS plugin.
 
    ```
    sudo apt-get -y install git
@@ -797,7 +803,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-7. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+9.  Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -805,7 +811,7 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-8. Test Cockpit by browsing to to `https://<ubuntu_ip_address_or_hostname>:9090`
+11. Test Cockpit by browsing to to `https://<ubuntu_ip_address_or_hostname>:9090`
 
 ### Webmin
 
