@@ -1,14 +1,12 @@
-# DIY NAS December 2020
+# DIY NAS August 2020
 
 The information contained in this document is aimed at those wanting to build a Linux-based DIY NAS.  These are the steps I have followed for my build and may come in useful.
 
-**Note:** If you read my last guide that covered similar instructions for CentOS 8, this might look familiar.  I'm re-writing it due to the recent RedHat announcement that CentOS Linux is being "killed off" in favour of CentOS Stream.  "That's a big no from me, dawg."
-
 **Disclaimer: There is absolutely no warranty, express or implied, in ANY of the information contained below.  If you use any of this information, you do so at your own risk.  The writers of this content are not responsible for any loss of any kind that may arise from the use of this information.  You assume all responsibility for using or not using this information!**
 
-An important consideration before taking any of the advice in this document is that the choice of hardware is completely up to you.  For reference, this info was prepared and tested on a Ubuntu 20.04.1 virtual machine, then used in production on physical hardware.
+An important consideration before taking any of the advice in this document is that the choice of hardware is completely up to you.  For reference, this info was prepared and tested on a CentOS 8.2 virtual machine, then used in production on physical hardware.
 
-*Configuration steps will be different if you choose a different Linux distribution.  The steps will be identical if you use Ubuntu 20.04.1 but I can't guarantee the steps will be identical on any other distribution.  To keep things simple, the operating system in use through this document will be referred to simply as "Ubuntu".*
+*Configuration steps will be different if you choose a different Linux distribution.  The steps will be identical if you use CentOS 8.2 but I can't guarantee the steps will be identical on any other distribution.  To keep things simple, the operating system in use through this document will be referred to simply as "CentOS".*
 
 ## Credit
 
@@ -42,22 +40,22 @@ As an entry-level primer, using `vi` to make quick edits can be done as follows.
 
 ## Prequisites
 
-Your Ubuntu system should have at least 1 non-root user with a username of your choice.  While you **could** use the "root" user without requiring `sudo` privilege escalation, that is universally considered bad security practice.
+Your CentOS system should have at least 1 non-root user with a username of your choice.  While you **could** use the "root" user without requiring `sudo` privilege escalation, that is universally considered bad security practice.
 
 For reference, my username throughout all screenshots is simply "chris".
 
 The first section is making sure your machine is ready to proceed.
 
-1. First, make sure your Ubuntu system is up-to-date and has all latest packages.
+1. First, make sure your CentOS system is up-to-date and has all latest packages.
 
    ```
-   sudo apt-get -y update
+   sudo dnf -y update
    ```
 
 2. Install OpenSSH-Server if it has not already been installed.
 
    ```
-   sudo apt-get install -y openssh-server
+   sudo dnf -y install openssh-server
    sudo systemctl enable sshd --now
    ```
 
@@ -71,7 +69,7 @@ The first section is making sure your machine is ready to proceed.
 
 ## Add SSH Key Pair (Optional)
 
-For remote command-line administration via SSH, it can be useful to add your SSH public key to your `authorized_keys` file on the Ubuntu server.  These steps assume the remote workstation is running Linux, although the same commands will work on Mac OS X.  The paths below may be different, though.
+For remote command-line administration via SSH, it can be useful to add your SSH public key to your `authorized_keys` file on the CentOS server.  These steps assume the remote workstation is running Linux, although the same commands will work on Mac OS X.  The paths below may be different, though.
 
 1. Generate an SSH key pair.
 
@@ -81,53 +79,66 @@ For remote command-line administration via SSH, it can be useful to add your SSH
 
    The default filenames are **/home/<username>/.ssh/id_rsa** and **/home/<username>/.ssh/id_rsa.pub**.  Alter these as necessary in upcoming steps, if you opt to use different filenames.
 
-2. Copy your SSH public key to your account's `authorized_keys` file on the Ubuntu server.
+2. Copy your SSH public key to your account's `authorized_keys` file on the CentOS server.
 
    ```
-   ssh-copy-id -i <keyfile> <username>@<ubuntu_ip_address_or_hostname>
+   ssh-copy-id <username>@<centos_ip_address_or_hostname>
    ```
 
 3. Test password-less login.
 
    ```
-   ssh <username>@<ubuntu_ip_address_or_hostname>
+   ssh <username>@<centos_ip_address_or_hostname>
    ```
 
    *Use the command below to specify an SSH key, if your key names don't match the defaults.*
 
    ```
-   ssh <username>@<ubuntu_ip_address_or_hostname> -i ~/.ssh/<rsa_public_key_filename>
+   ssh <username>@<centos_ip_address_or_hostname> -i ~/.ssh/<rsa_public_key_filename>
    ```
 
-## Configure Ubuntu 20.04.1 Server
+## Configure CentOS 8 Server
 
 The next sections can be used or not used as you see fit.  For example, you may not choose to use ZFS as your NAS filesystem.  If that's the case, just skip that section.
 
-*In all steps that make use of `apt-get`, I have used the `-y` switch.  This prevents `apt-get` for asking for confirmation before installing packages.  You may wish to run `apt-get` without the `-y` switch if you'd like to see what it's doing at each step.*
+*In all steps that make use of `dnf`, I have used the `-y` switch.  This prevents `dnf` for asking for confirmation before installing packages.  You may wish to run `dnf` without the `-y` switch if you'd like to see what it's doing at each step.*
 
-### Ubuntu 20.04.1
+### CentOS 8.2
 
-1. Update Ubuntu packages.
+1. Update CentOS 8 packages.
 
    ```
-   sudo apt-get -y update
+   sudo dnf -y update
    ```
 
 2. Install useful packages.
-   
-   **Note:** This will install `firewalld` as well as other packages.  Please be aware of the implications of installing `firewalld` before you continue.
 
    ```
-   sudo apt-get -y install git curl rsync bind9-utils net-tools firewalld
-   sudo systemctl enable firewalld --now
-   sudo firewall-cmd --permanent --add-service=ssh
-   sudo firewall-cmd --reload
+   sudo dnf -y install git curl rsync yum-utils bind-utils net-tools
    ```
 
 3. Install temperature monitors.
 
+   - Install packages.
+
+     ```
+     sudo dnf -y install epel-release
+     sudo dnf install -y hddtemp
+     sudo dnf -y install lm_sensors
+     ```
+
+   - Detect sensors for the first time.
+
+     ```
+     sudo sensors-detect
+     ```
+
+### Python 3.8
+
+1. Install Python 3.8.  I have Python automation scripts on my NAS and a number of useful system management packages available online will expect Python to be installed.
+
    ```
-   sudo apt-get install -y hddtemp
+   sudo dnf module -y install python38
    ```
 
 ### Mail
@@ -137,7 +148,7 @@ I use `sendmail` on my server as a means to send email when "stuff" happens.
 1. Install the required packages.
 
    ```
-   sudo apt-get -y install sendmail sendmail-cf m4
+   sudo dnf -y install sendmail sendmail-cf m4
    ```
 
 2. Make sure the following line is **uncommented** in `/etc/mail/sendmail.mc`:
@@ -194,26 +205,15 @@ I use `sendmail` on my server as a means to send email when "stuff" happens.
    sendmail <put_your_recipient_email_address_here> < /tmp/email.txt
    ```
 
+   Resources: [How to Install Sendmail Server on CentOS/RHEL 7/6](https://tecadmin.net/install-sendmail-server-on-centos-rhel-server/)
+
 ### KVM
 
-1. Install the `kvm-ok` tool.
+1. Install KVM.
 
    ```
-   sudo apt-get -y install cpu-checker
-   ```
-
-2. Verify KVM support is present.
-
-   ```
-   sudo kvm-ok
-   ```
-
-   A result of **4** indicates the system is ready to run VMs.
-
-3. Install KVM.
-
-   ```
-   sudo apt install -y qemu qemu-kvm libvirt-daemon libvirt-clients bridge-utils virt-manager
+   sudo dnf install -y virt-install
+   sudo dnf install -y @virt
    sudo systemctl enable libvirtd --now
    ```
 
@@ -222,8 +222,6 @@ I use `sendmail` on my server as a means to send email when "stuff" happens.
 ### Configure Networking
 
 1. Create bridge interface and routed network.  The routed network step can be skipped if you don't need it; please note the creation of a routed network will require changes to your upstream router.
-
-   **Note:** This section is not yet updated for use with Ubuntu.  Don't use, yet.
 
    Sources: [How to install KVM on CentOS 7 / RHEL 7 Headless Server](https://www.cyberciti.biz/faq/how-to-install-kvm-on-centos-7-rhel-7-headless-server/) and [KVM: Creating a guest VM on a network in routed mode](https://fabianlee.org/2019/06/05/kvm-creating-a-guest-vm-on-a-network-in-routed-mode/)
 
@@ -335,21 +333,34 @@ I use `sendmail` on my server as a means to send email when "stuff" happens.
 
 Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful and still working [Transparent compression filesystem in conjunction with ext4](https://serverfault.com/questions/617648/transparent-compression-filesystem-in-conjunction-with-ext4/617791#617791)
 
-1. Install OpenZFS.
+1. Add the ZFS repository.
 
    ```
-   sudo apt-get -y install zfsutils-linux
+   sudo dnf -y install http://download.zfsonlinux.org/epel/zfs-release.el8_2.noarch.rpm
    ```
 
-2. Ensure the ZFS module can be loaded.
+2. Modify the repository file to enable the kABI-tracking kmods.  Please see the [OpenZFS website](https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html) for information on why you may or may not want to do this.
+
+   - Open `/etc/yum.repos.d/zfs.repo`
+   - In the **[zfs]** section, change **enabled=1** to **enabled=0**
+   - In the **[zfs-kmod]** section, change **enabled=0** to **enabled=1**
+
+3. Install OpenZFS.
+
+   ```
+   sudo dnf -y install zfs
+   ```
+
+4. Ensure the ZFS module can be loaded.
 
    ```
    sudo modprobe zfs
    ```
 
-5. Ensure the ZFS modules get loaded at runtime.
+5. Ensure the ZFS modules get loaded at runtime.  Without doing this, my system would "hang" during boot, preventing the ZFS pools from starting automatically.  See the `ZOL 0.8 Not Loading Modules or ZPools on Boot<https://github.com/openzfs/zfs/issues/8885>`_ GitHub issue for details.
 
-   - Edit `/etc/modules` and add the following line to the new file.
+   - Create a file named `/etc/modules-load.d/zfs.conf`.
+   - Add the following line to the new file.
 
      ```
      zfs
@@ -377,12 +388,12 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
 7. Setup ZFS email notifications - Optional
 
-   Resources: [Configuring ZFS Event Daemon (ZED) on Ubuntu 16.04](https://medium.com/@arunderwood/configuring-zfs-event-daemon-zed-on-ubuntu-16-04-ee9ac2623c86).
+   Resources: [Configuring ZFS Event Daemon (ZED) on Ubuntu 16.04](https://medium.com/@arunderwood/configuring-zfs-event-daemon-zed-on-ubuntu-16-04-ee9ac2623c86).  Note these steps are the same for CentOS 8, so please ignore the Ubuntu mention there.
 
    - Install `mail`:
 
      ```
-     sudo apt-get install -y mail sendmail
+     sudo dnf install -y mail sendmail
      ```
 
    - Edit `/etc/zfs/zed.d/zed.rc` and make appropriate changes as per the article.
@@ -400,23 +411,31 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
      sudo systemctl restart zed
      sudo systemctl status zed
      ```
+
    
+
 ### NFS Server
 
 1. Install NFS packages.
 
    ```
-   sudo apt-get -y install nfs-common
+   sudo dnf install nfs-utils
    ```
 
-2. Allow access to NFS through the firewall.
+2. Enable and start the NFS server.
+
+   ```
+   sudo systemctl enable nfs-server.service --now
+   ```
+
+3. Allow access to NFS through the firewall.
 
    ```
    sudo firewall-cmd --add-service=nfs --permanent
    sudo firewall-cmd --reload
    ```
 
-3. Create NFS exports in `/etc/exports`.  The file below is an example only.
+4. Create NFS exports in `/etc/exports`.  The file below is an example only.
 
    ```
    # read-write access allowed by machine with IP address 192.168.100.101 only
@@ -427,44 +446,36 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
 ### Docker
 
-1. Remove old versions of Docker.
+Note the commands below make use of the `--nobest` switch.  This allows `dnf` to install packages other than the best candidate.  On CentOS 8, this is the "easiest" way of installing Docker right now, but it is important to be aware that this can cause future issues with updating the `docker-ce` package.
+
+Source: [Answer by Saustrup on serverFault, No network connectivity to/from Docker CE container on CentOS 8](https://serverfault.com/questions/987686/no-network-connectivity-to-from-docker-ce-container-on-centos-8)
+
+1. Add the Docker repository.
 
    ```
-   sudo apt-get -y remove docker docker-engine docker.io containerd runc
+   sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
    ```
 
-2. Install prerequisites.
+2. Install Docker Container Engine.
 
    ```
-   sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+   sudo dnf install -y docker-ce --nobest
    ```
 
-3. Install the Docker GPG key.
-
-   ```
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   ```
-
-4. Add the Docker repository.
-
-   ```
-   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-   ```
-
-5. Install Docker.
-
-   ```
-   sudo apt-get -y update
-   sudo apt-get -y install docker-ce docker-ce-cli containerd.io
-   ```
-
-6. Make sure the Docker service starts when the server boots.
+3. Enable and start the Docker service.
 
    ```
    sudo systemctl enable docker --now
    ```
 
-7. Configure the default IP address to use when binding container ports.
+4. Enable `firewalld` masquerading for the `public` zone.  This fixes things like DNS name resolution from within containers.
+
+   ```
+   sudo firewall-cmd --zone=public --add-masquerade --permanent
+   sudo firewall-cmd --reload
+   ```
+
+5. Configure the default IP address to use when binding container ports.
 
    Source: [dockerd Documentation](https://docs.docker.com/engine/reference/commandline/dockerd/)
 
@@ -478,7 +489,7 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
      ```
      {
-         "ip": "<ubuntu_ip_address>"
+         "ip": "<centos_ip_address>"
      }
      ```
 
@@ -503,7 +514,7 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
      ![UID and GID of new docker user](docs/images/docker_uid_gid.png)
 
-     In this example, the UID is **1001** and the GID is **998**.
+     In this example, the UID is **1001** and the GID is **988**.
 
      *At this point you can set permissions on the folders used by docker containers.  For example, if you have a Plex container that stores its configuration in `/storage/appdata/plex`, you can run the following command to set ownership on that folder.  This assumes the container will run **as** the `docker` user.*
 
@@ -529,12 +540,12 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
 ### Docker Compose
 
-Source: [Install Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04)
+Source: [Install Docker Compose](https://docs.docker.com/compose/install/) and [Declare default environment variables in file](https://docs.docker.com/compose/env-file/)
 
 1. Download the latest stable release and make the binary executable.
 
    ```
-   sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
    sudo chmod +x /usr/local/bin/docker-compose
    ```
 
@@ -566,7 +577,7 @@ For my configuration, I'm using Docker Swarm to control the use of multiple cont
 1. Create a Docker Swarm.
 
    ```
-   sudo docker swarm init --advertise-addr=<ubuntu_nas_ip_address>
+   sudo docker swarm init --advertise-addr=<centos_nas_ip_address>
    ```
    
    ![Docker Swarm Init](docs/images/docker_swarm_init.png)
@@ -658,7 +669,7 @@ Source: [Installing Portainer](https://www.portainer.io/installation/)
    sudo firewall-cmd --reload
    ```
 
-5. Test Portainer by browsing to to `http://<ubuntu_ip_address_or_hostname>:9000`
+5. Test Portainer by browsing to to `http://<centos_ip_address_or_hostname>:9000`
 
 ### Container Monitoring with Grafana
 
@@ -668,10 +679,10 @@ This step is completely optional and should be thought about carefully before im
 
 2. Deploy the suite by following the [instructions](https://github.com/uschtwill/docker_monitoring_logging_alerting) in the repo.
 
-   *Note: The prereuisites for this suite indicate a requirement for `apache2-utils`.  This is because the suite requires the `htpasswd` command.  On Ubuntu 20.04.1, the `htpasswd` command is part of the `apache2-utils` package.  Install this as follows.
+   *Note: The prereuisites for this suite indicate a requirement for `apache2-utils`.  This is because the suite requires the `htpasswd` command.  On CentOS 8, the `htpasswd` command is part of the `httpd-tools` package.  Install this as follows.
 
    ```
-   sudo apt-get install -y apache2-utils
+   sudo dnf install -y httpd-tools
    ```
 
    ![Container Monitoring with Grafana](docs/images/container_monitoring.png)
@@ -683,7 +694,7 @@ Performance Co-Pilot, when installed alongside Cockpit UI in this configuration 
 1. Install PCP.
 
    ```
-   sudo apt-get install -y pcp
+   sudo dnf install -y pcp
    ```
 
 2. Start PCP.
@@ -705,55 +716,42 @@ Performance Co-Pilot, when installed alongside Cockpit UI in this configuration 
 
 *Cockpit UI could be optional if you prefer to use Webmin in the next section.*
 
+*Please also note that a server install of CentOS 8 will probably have Cockpit UI already installed.  It needs to be enabled to work, so if this is the case for your system, please skip to step 4.*
+
 Source: [Cockpit UI](https://cockpit-project.org/)
 
-**Important note:** The steps in this section will install Cockpit from Ubuntu **Backports**.  There are risks associated with this that you should be familiar with, before continuing.
+**Important note:** The steps in this section will install the Cockpit **Preview** version.  If you prefer to install the current stable version, skip to step 3.
 
-1. Download the appropriate installation files.  These steps are for Cockpit version 233.  I'm based in Australia so I'm using the Ubuntu AU mirror.
-
-   ```
-   cd ~
-   mkdir cockpit
-   cd cockpit
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-bridge_233-1~ubuntu20.04.1_amd64.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-dashboard_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-ws_233-1~ubuntu20.04.1_amd64.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-system_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-storaged_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-pcp_233-1~ubuntu20.04.1_amd64.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-networkmanager_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-doc_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-machines_233-1~ubuntu20.04.1_all.deb
-   wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-packagekit_233-1~ubuntu20.04.1_all.deb
-   # wget http://au.archive.ubuntu.com/ubuntu/pool/universe/c/cockpit/cockpit-tests_233-1~ubuntu20.04.1_amd64.deb
-
-2. Install Cockpit.
+1. Create the Cockpit Preview repo file.
 
    ```
-   cd ~/cockpit
-   sudo dpkg -i cockpit-bridge_233-1~ubuntu20.04.1_amd64.deb
-   sudo dpkg -i cockpit-ws_233-1~ubuntu20.04.1_amd64.deb
-   sudo dpkg -i cockpit-dashboard_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-system_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-storaged_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-networkmanager_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-doc_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-machines_233-1~ubuntu20.04.1_all.deb
-   sudo dpkg -i cockpit-packagekit_233-1~ubuntu20.04.1_all.deb
-   # sudo dpkg -i cockpit-tests_233-1~ubuntu20.04.1_amd64.deb
+   sudo touch /etc/yum.repos.d/cockpit-preview.repo
    ```
- 
-2. Install PCP and Cockpit Machines.
+   
 
-   ```
-   sudo apt-get -y install libpcp3 libvirt-dbus
-   sudo dpkg -i install cockpit-pcp_233-1~ubuntu20.04.1_amd64.deb
-   sudo dpkg -i install cockpit-machines_233-1~ubuntu20.04.1_all.deb
+2. Add the following contents to `/etc/yum.repos.d/cockpit-preview.repo`:
+
+   ``` 
+   [copr:copr.fedorainfracloud.org:group_cockpit:cockpit-preview]
+   name=Copr repo for cockpit-preview owned by @cockpit
+   baseurl=https://download.copr.fedorainfracloud.org/results/@cockpit/cockpit-preview/epel-8-$basearch/
+   type=rpm-md
+   skip_if_unavailable=True
+   gpgcheck=1
+   gpgkey=https://download.copr.fedorainfracloud.org/results/@cockpit/cockpit-preview/pubkey.gpg
+   repo_gpgcheck=0
+   enabled=1
+   enabled_metadata=1
    ```
 
-3. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
+3. Update `dnf` cache and install Cockpit Preview.  We'll also install `cockpit-storaged` at the same time, since I can't imagine a situation/build where storage info and management isn't useful.
+
+   ```
+   sudo dnf -y update
+   sudo dnf install -y cockpit cockpit-storaged
+   ```
+
+4. Optionally, reconfigure the Cockpit port from 9090 to the port you need.
 
    The directions are located [here](https://cockpit-project.org/guide/latest/listen.html).
 
@@ -765,38 +763,41 @@ Source: [Cockpit UI](https://cockpit-project.org/)
    sudo setenforce 1
    ```
 
-4. Enable and start the Cockpit service.
+5. Enable and start the Cockpit service.
 
    ```
    sudo systemctl enable cockpit.socket --now
    ```
 
-5. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
-
-   - If you **HAVE NOT** changed the Cockpit port from 9090 to something else:
-
-     ```
-     sudo firewall-cmd --permanent --add-service=cockpit
-     sudo firewall-cmd --reload
-     ```
-
-   - If you **HAVE** changed the Cockpit port from 9090 to something else.  Replace **<port>** to match your environment.
-
-     ```
-     sudo firewall-cmd --permanent --add-port=<port>/tcp
-     sudo firewall-cmd --reload
-     ```
-
-6. If using ZFS, install the Cockpit ZFS plugin.
+6. Allow access to Cockpit through the firewall.  This will probably say the rule is already enabled, but it is safe to ignore that message.
 
    ```
-   sudo apt-get -y install git
+   sudo firewall-cmd --add-service=cockpit --permanent
+   sudo firewall-cmd --reload
+   ```
+
+7. If using ZFS, install the Cockpit ZFS plugin.
+
+   ```
+   sudo dnf -y install git
    cd ~
    git clone https://github.com/optimans/cockpit-zfs-manager.git
    sudo cp -r cockpit-zfs-manager/zfs /usr/share/cockpit
    ```
 
-7. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
+8. If using KVM, install the Cockpit KVM plugin.
+
+   ```
+   sudo dnf install -y cockpit-machines
+   ```
+
+9. For historical performance metrics via PCP, install the Cockpit PCP plugin.
+
+   ```
+   sudo dnf install -y cockpit-pcp
+   ```
+
+10. Optionally, install your SSL certificates as per the [Cockpit Guide](https://cockpit-project.org/guide/172/https.html).  To see where Cockpit currently stores the default SSL certificate and which certificate it is currently using, run the following command.
 
    ```
    sudo remotectl certificate
@@ -804,45 +805,54 @@ Source: [Cockpit UI](https://cockpit-project.org/)
 
    By default, Cockpit will most likely use a certificate named `0-self-signed.cert`.
 
-8. Test Cockpit by browsing to to `https://<ubuntu_ip_address_or_hostname>:9090`
+11. Test Cockpit by browsing to to `https://<centos_ip_address_or_hostname>:9090`
+
+11. Optionally, change the Cockpit UI from `9090` to a port that suits your network.  The steps for this can be found in the [Cockpit Documentation].  On CentOS 8, you may need to run `sudo setenforce 0` before restarting the `cockpit.socket` service, then `sudo setenforce 1` afterwards.  Without doing this, SELinux may stop Cockpit from restarting and listening on the new port.
+
+    The following commands can be used to make the SELinux Local Policy change permanent:
+
+    ```
+    sudo ausearch -c 'systemd' --raw | audit2allow -M my-systemd
+    sudo semodule -X 300 -i my-systemd.pp
+    ```
 
 ### Webmin
 
 *Webmin could be optional if you prefer to use Cockpit UI from the previous section.*
 
-1. Add the Webmin APT sources by adding this line to the bottom of `/etc/apt/sources.list`:
+1. Add the Webmin repository.
 
-   ```
-   deb http://download.webmin.com/download/repository sarge contrib
-   ```
+   - Create the repository file.
 
-2. Add the Webmin PGP key.
+     ```
+     sudo touch /etc/yum.repos.d/webmin.repo
+     ```
 
-   ```
-   wget -q -O- http://www.webmin.com/jcameron-key.asc | sudo apt-key add
-   ```
+   - Add the following content to the repo file.
 
-3. Update the APT sources.
+     ```
+     [Webmin]
+     name=Webmin Distribution Neutral
+     baseurl=http://download.webmin.com/download/yum
+     enabled=1
+     gpgcheck=1
+     gpgkey=http://www.webmin.com/jcameron-key.asc
+     ```
+   
+   - Install Webmin.
 
-   ```
-   sudo apt-get update
-   ```
+     ```
+     sudo dnf -y install webmin
+     ```
 
+   - Allow access to Webmin through the firewall.
 
-4. Install Webmin.
+     ```
+     sudo firewall-cmd --add-port=10000/tcp --permanent
+     sudo firewall-cmd --reload
+     ```
 
-   ```
-   sudo apt-get install -y webmin
-   ```
-
-5. Allow access to Webmin through the firewall, if you have `firewalld` installed.
-
-   ```
-   sudo firewall-cmd --add-port=10000/tcp --permanent
-   sudo firewall-cmd --reload
-   ```
-
-6. Test Webmin by browsing to `https://<ubuntu_ip_address_or_hostname>:10000`
+   - Test Webmin by browsing to `https://<centos_ip_address_or_hostname>:10000`
 
 ## Notes
 
