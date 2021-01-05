@@ -221,115 +221,40 @@ I use `sendmail` on my server as a means to send email when "stuff" happens.
 
 ### Configure Networking
 
-1. Create bridge interface and routed network.  The routed network step can be skipped if you don't need it; please note the creation of a routed network will require changes to your upstream router.
+Resources: [How to Setup bridged networking for KVM in Ubuntu 20.04](https://devtutorial.io/how-to-setup-bridged-networking-for-kvm-in-ubuntu-20-04.html)
 
-   **Note:** This section is not yet updated for use with Ubuntu.  Don't use, yet.
+1. Create bridge interface.
 
-   Sources: [How to install KVM on CentOS 7 / RHEL 7 Headless Server](https://www.cyberciti.biz/faq/how-to-install-kvm-on-centos-7-rhel-7-headless-server/) and [KVM: Creating a guest VM on a network in routed mode](https://fabianlee.org/2019/06/05/kvm-creating-a-guest-vm-on-a-network-in-routed-mode/)
-
-   - Get your LAN interface name:
-
-     ```
-     ip a | grep enp
-     ```
-
-     ![Get interface name](docs/images/get_interface.png)
-
-     You can see on this system that the LAN interface is named `enp8s0`.
-
-   - Edit the `/etc/sysconfig/network-scripts/ifcfg-enp8s0` file and add this line at the end.  This assumes you'd like the bridged interface to be named `br0` and that your Ethernet interface name is `enp8s0`.  Adjust these settings as necessary.
+   - Make a backup of `/etc/netplan/00-installer-config.yaml`
+   - Edit `/etc/netplan/00-installer-config.yaml` and set the contents as follows.  Make sure to change all IP addresses and interfaces names so they match your environment.  Also change `br0` to match the name of the bridge interface you'd like to create, if `br0` doesn't suit your requirements.
 
      ```
-     BRIDGE="br0"
+     network:
+     version: 2
+     renderer: networkd
+     ethernets:
+        enp1s0:
+           dhcp4: false
+           dhcp6: false 
+     bridges: 
+        br0:
+           interfaces: [enp1s0]
+           addresses: [192.168.100.20/24]
+           gateway4: 192.168.1.1
+           nameservers:
+           addresses: [8.8.8.8,8.8.4.4]
+           parameters:
+           stp: false
+           forward-delay: 0
+           dhcp4: no
+           dhcp6: no
      ```
 
-   - Create an interface configuration for `br0`.
+   - Apply the configuration:
 
      ```
-     sudo touch /etc/sysconfig/network-scripts/ifcfg-br0
+     sudo netplan apply
      ```
-
-   - Configure the `br0` to have a static IP address by adding the following content to the new file.  Replace **IPADDR**, **GATEWAY** and **DNS1** as necessary.
-
-     ```
-     STP=no
-     TYPE=Bridge
-     PROXY_METHOD=none
-     BROWSER_ONLY=no
-     BOOTPROTO=none
-     IPADDR=<required_ip_address>
-     PREFIX=24
-     GATEWAY=<required_gateway>
-     DNS1=<dns_server>
-     DEFROUTE=yes
-     IPV4_FAILURE_FATAL=no
-     IPV6INIT=no
-     NAME=br0
-     DEVICE=br0
-     ONBOOT=yes
-     AUTOCONNECT_SLAVES=yes
-     ```
-
-   - Apply the changes by restarting the `NetworkManager` service.
-
-     ```
-     sudo systemctl restart NetworkManager
-     ```
-
-   - Verify IP forwarding is enabled.
-
-     *Thanks to Fabian Lee, author of the referenced source article, for the information about IP forwarding and creating routed networks.*
-
-     ```
-     sudo cat /proc/sys/net/ipv4/ip_forward
-     ```
-
-     If this returns **1**, you may skip to the next section.  If this returns **0**, continue below.
-
-     - Enable IPv4 forwarding for the current session.
-     
-       ```
-       sudo sysctl -w net.ipv4.ip_forward=1
-       ```
-
-     - Enable IPv4 permanently by adding the following line to `/etc/sysctl.conf`.
-
-       ```
-       net.ipv4.ip_forward=1
-       ```
-
-   - Create the routed network XML configuration:
-   
-     ```
-     cat <<EOF > routed225.xml
-     <network>
-       <name>routed225</name>
-       <forward mode='route' dev='br0'/>
-       <bridge name='virbr225' stp='on' delay='2'/>
-       <ip address='192.168.225.1' netmask='255.255.255.0'>
-         <dhcp>
-           <range start='192.168.225.100' end='192.168.225.200'/>
-           <host name='myclone3' ip='192.168.225.143'/>
-         </dhcp>
-       </ip>
-     </network>
-     EOF
-
-   - Create and start the network, then set it to start automatically.
-
-     ```
-     sudo virsh net-define routed225.xml
-     sudo virsh net-start routed225
-     sudo virsh net-autostart routed225
-     ```
-
-   - Verify the network exists and is active.
-
-     ```
-     sudo virsh net-list --all
-     ```
-
-     ![Routed network active](docs/images/routed_network_active.png)
 
 ### OpenZFS
 
@@ -612,7 +537,7 @@ For my configuration, I'm using Docker Swarm to control the use of multiple cont
 
 Source: [Installing Portainer](https://www.portainer.io/installation/)
 
-*Note: The official documentation uses `docker run` to start Portainer,  but in this example I'm using `docker-compose`.  Docker Swarm was mentioned above as that's what I use in production, but this example may be easier than going down the Docker Swarm road.
+*Note: The official documentation uses `docker run` to start Portainer, but in this example I'm using `docker-compose`.  Docker Swarm was mentioned above as that's what I use in production, but this example may be easier than going down the Docker Swarm road.
 
 1. Create a file named `~/docker/docker-compose.yml`
 
