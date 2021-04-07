@@ -453,6 +453,51 @@ Resources: [ZFS Handbook](https://www.freebsd.org/doc/handbook), old but useful 
 
      ![Hello World container running](docs/images/docker_hello_world.png)
 
+### Docker Remote Management
+
+If you need to manage your server's Docker environment from remote locations, you'll also need to open access to the Docker API over TCP.  Before continuing, please be aware of the security implications of doing this.
+
+Why do this?  Docker remote management applications e.g. Portainer (covered later in this guide) need to be able to access the Docker API remotely if they aren't running on the same host.
+
+1. Edit the Docker service `systemd` script:
+
+   ```
+   sudo vi /lib/systemd/system/docker.service
+   ```
+
+2. Look for the existing `ExecStart` command, which should look something like this:
+
+   ```
+   ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+   ```
+
+3. Alter that line to be as follows:
+
+   ```
+   ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243
+   ```
+
+   Note: The port here can be pretty much anything you like, as long as it isn't already used.
+
+4. Reload the configuration to ensure the updated service takes effect at next start/restart, then restart the Docker service:
+
+   ```
+   sudo daemon-reload
+   sudo systemctl restart docker
+   ```
+
+5. Test the API is available, ideally from another device on your network:
+
+   ```
+   http://<server_ip_address>:4243/version
+   ```
+
+   If the change was successful, you'll see something like this:
+
+   ```
+   {"Platform":{"Name":"Docker Engine - Community"},"Components":[{"Name":"Engine","Version":"20.10.5","Details":{"ApiVersion":"1.41","Arch":"amd64","BuildTime":"2021-03-02T20:16:15.000000000+00:00","Experimental":"false","GitCommit":"363e9a8","GoVersion":"go1.13.15","KernelVersion":"5.11.0-7612-generic","MinAPIVersion":"1.12","Os":"linux"}},{"Name":"containerd","Version":"1.4.4","Details":{"GitCommit":"05f951a3781f4f2c1911b05e61c160e9c30eaa8e"}},{"Name":"runc","Version":"1.0.0-rc93","Details":{"GitCommit":"12644e614e25b05da6fd08a38ffa0cfe1903fdec"}},{"Name":"docker-init","Version":"0.19.0","Details":{"GitCommit":"de40ad0"}}],"Version":"20.10.5","ApiVersion":"1.41","MinAPIVersion":"1.12","GitCommit":"363e9a8","GoVersion":"go1.13.15","Os":"linux","Arch":"amd64","KernelVersion":"5.11.0-7612-generic","BuildTime":"2021-03-02T20:16:15.000000000+00:00"}
+   ```
+
 ### Docker Compose
 
 Source: [Install Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04)
